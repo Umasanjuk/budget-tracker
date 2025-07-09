@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Budget Tracker</title>
+  <link rel="stylesheet" href="styles.css">
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    * {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+body {
+ background: url('https://images.unsplash.com/photo-1503264116251-35a269479413?auto=format&fit=crop&w=1950&q=80') no-repeat center center fixed;
+      background-size: cover;
+      color: #333;
+      padding: 20px;
+      transition: background-color 0.3s ease, color 0.3s ease;
+  color: #333;
+  padding: 20px;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+body.dark {
+  background-color: #1e1e1e;
+  color: #fff;
+}
+
+.container {
+  max-width: 700px;
+  margin: auto;
+  padding: 20px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
+}
+
+body.dark .container {
+  background-color: #2c2c2c;
+}
+
+h1, h2 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.form, .salary-section {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 20px;
+  justify-content: center;
+}
+
+input, select, button {
+  padding: 10px;
+  font-size: 16px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+
+input:focus, select:focus {
+  outline: none;
+  border-color: #3b82f6;
+}
+
+button {
+  background-color: #3b82f6;
+  color: white;
+  cursor: pointer;
+  border: none;
+  transition: background-color 0.2s ease;
+}
+
+button:hover {
+  background-color: #2563eb;
+}
+
+ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+li {
+  background-color: #f9f9f9;
+  padding: 14px;
+  margin-bottom: 10px;
+  border-radius: 10px;
+  transition: background-color 0.3s ease;
+  border-left: 6px solid #3b82f6;
+}
+
+body.dark li {
+  background-color: #3a3a3a;
+}
+
+.expense-card-title,
+.expense-card-details {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.expense-card-details {
+  font-size: 14px;
+  margin-top: 5px;
+  color: #666;
+}
+
+body.dark .expense-card-details {
+  color: #aaa;
+}
+
+.delete-btn {
+  background-color: #ef4444;
+  color: white;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-left: 10px;
+}
+
+.delete-btn:hover {
+  background-color: #dc2626;
+}
+
+.category-badge {
+  background-color: #10b981;
+  color: white;
+  padding: 2px 8px;
+  font-size: 12px;
+  border-radius: 6px;
+  margin-left: 10px;
+}
+
+.summary {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+#expenseChart {
+  margin: 20px auto;
+  display: block;
+}
+
+.mini-chart-card {
+  padding: 15px;
+  background-color: #f0f4f8;
+  border-radius: 10px;
+  margin: 10px 0;
+}
+
+body.dark .mini-chart-card {
+  background-color: #374151;
+}
+
+.toggle-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+
+.mode-label {
+  margin-left: 10px;
+  font-size: 14px;
+}
+
+/* Toggle Switch Styling */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 26px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  top: 0; left: 0;
+  right: 0; bottom: 0;
+  background-color: #ccc;
+  transition: 0.4s;
+  border-radius: 34px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  transition: 0.4s;
+  border-radius: 50%;
+}
+
+input:checked + .slider {
+  background-color: #3b82f6;
+}
+
+input:checked + .slider:before {
+  transform: translateX(24px);
+}
+
+.hidden {
+  display: none;
+}
+
+@media (max-width: 600px) {
+  .form, .salary-section {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  input, select, button {
+    width: 100%;
+  }
+}
+
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Budget Tracker 💸</h1>
+
+    <div class="toggle-container">
+      <label class="switch">
+        <input type="checkbox" id="darkToggle" />
+        <span class="slider round"></span>
+      </label>
+      <span class="mode-label">Dark Mode</span>
+    </div><br />
+
+    <div class="salary-section">
+      <input type="number" id="salary" placeholder="Enter your salary (₹)" />
+      <div id="gst-options">
+        <label><input type="checkbox" id="applyGST" /> Apply GST</label>
+        <label id="gst-rate-label" class="hidden">
+          GST Rate (%): <input type="number" id="gstRate" value="18" min="0" max="100" />
+        </label>
+      </div>
+      <input type="number" id="dailyLimit" placeholder="Set Daily Limit ₹" />
+      <button onclick="setSalary()">Set Salary</button>
+    </div>
+
+    <div class="summary">
+      <p><strong>Initial Salary:</strong> <span id="initial-salary">₹0</span></p>
+      <p><strong>Remaining:</strong> ₹<span id="balance">0</span></p>
+    </div>
+
+    <div class="form">
+      <input type="text" id="title" placeholder="Expense (e.g., Food, Rent)" />
+      <input type="number" id="amount" placeholder="Amount (₹)" />
+      <select id="category">
+        <option value="Food">Food</option>
+        <option value="Rent">Rent</option>
+        <option value="Shopping">Shopping</option>
+        <option value="Transport">Transport</option>
+        <option value="Other">Other</option>
+      </select>
+      <input type="date" id="datePicker" />
+      <input type="text" id="note" placeholder="Optional Note" />
+      <button onclick="addExpense()">Add Expense</button>
+    </div>
+
+    <div class="mini-chart-card">
+      <canvas id="expenseChart" width="150" height="150"></canvas>
+    </div>
+
+    <button onclick="downloadCSV()">Export CSV</button>
+    <br><br>
+    <select id="monthFilter" onchange="renderList()">
+      <option value="">All Months</option>
+    </select>
+    <select id="sortOption" onchange="renderList()">
+      <option value="">Sort By</option>
+      <option value="amount">Amount (High to Low)</option>
+      <option value="date">Date (Newest First)</option>
+    </select>
+
+    <h2>History 📜</h2>
+    <ul id="expense-list"></ul>
+  </div>
+
+  <script >
+    let expenses = [];
+let balance = 0;
+let initialSalary = 0;
+
+const salaryInput = document.getElementById("salary");
+const balanceDisplay = document.getElementById("balance");
+const salaryDisplay = document.getElementById("initial-salary");
+const dailyLimitInput = document.getElementById("dailyLimit");
+
+function setSalary() {
+  const salary = parseFloat(salaryInput.value);
+  const applyGST = document.getElementById("applyGST").checked;
+  const gstRate = parseFloat(document.getElementById("gstRate").value) || 0;
+
+  if (!isNaN(salary)) {
+    initialSalary = salary;
+    balance = applyGST ? salary - (salary * gstRate / 100) : salary;
+    salaryDisplay.textContent = `₹${initialSalary.toFixed(2)}`;
+    updateBalance();
+    renderChart();
+  }
+}
+
+function addExpense() {
+  const title = document.getElementById("title").value;
+  const amount = parseFloat(document.getElementById("amount").value);
+  const category = document.getElementById("category").value;
+  const date = document.getElementById("datePicker").value;
+  const note = document.getElementById("note").value;
+  const dailyLimit = parseFloat(dailyLimitInput.value);
+
+  if (!title || isNaN(amount) || !date) return alert("Please fill all fields");
+
+  if (dailyLimit && amount > dailyLimit) {
+    alert("Warning: This exceeds your daily limit!");
+  }
+
+  balance -= amount;
+  updateBalance();
+
+  expenses.push({ title, amount, category, date, note });
+  renderList();
+  renderChart();
+}
+
+function updateBalance() {
+  balanceDisplay.textContent = balance.toFixed(2);
+}
+
+function renderList() {
+  const list = document.getElementById("expense-list");
+  const monthFilter = document.getElementById("monthFilter").value;
+  const sortOption = document.getElementById("sortOption").value;
+
+  list.innerHTML = "";
+
+  let filtered = [...expenses];
+
+  if (monthFilter) {
+    filtered = filtered.filter(exp => new Date(exp.date).getMonth() + 1 == monthFilter);
+  }
+
+  if (sortOption === "amount") {
+    filtered.sort((a, b) => b.amount - a.amount);
+  } else if (sortOption === "date") {
+    filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
+  }
+
+  filtered.forEach((exp, index) => {
+    const li = document.createElement("li");
+    li.innerHTML = `
+      <div class="expense-card-title">
+        <span>${exp.title} <span class="category-badge">${exp.category}</span></span>
+        <span>₹${exp.amount}</span>
+      </div>
+      <div class="expense-card-details">
+        <span>${exp.date}</span>
+        <span>${exp.note || ""}</span>
+        <button class="delete-btn" onclick="deleteExpense(${index})">×</button>
+      </div>
+    `;
+    list.appendChild(li);
+  });
+}
+
+function deleteExpense(index) {
+  balance += expenses[index].amount;
+  updateBalance();
+  expenses.splice(index, 1);
+  renderList();
+  renderChart();
+}
+
+function renderChart() {
+  const categories = {};
+  expenses.forEach(e => {
+    categories[e.category] = (categories[e.category] || 0) + e.amount;
+  });
+
+  const ctx = document.getElementById("expenseChart").getContext("2d");
+  if (window.expChart) window.expChart.destroy();
+
+  window.expChart = new Chart(ctx, {
+    type: 'pie',
+    data: {
+      labels: Object.keys(categories),
+      datasets: [{
+        data: Object.values(categories),
+        backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#6366f1'],
+      }]
+    },
+    options: {
+      plugins: {
+        legend: { display: true, position: 'bottom' }
+      }
+    }
+  });
+}
+
+function downloadCSV() {
+  let csv = "Title,Amount,Category,Date,Note\\n";
+  expenses.forEach(e => {
+    csv += `${e.title},${e.amount},${e.category},${e.date},${e.note || ""}\\n`;
+  });
+
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = "expenses.csv";
+  link.click();
+}
+
+// Dark mode toggle
+document.getElementById("darkToggle").addEventListener("change", (e) => {
+  document.body.classList.toggle("dark", e.target.checked);
+});
+
+// GST input toggle
+document.getElementById("applyGST").addEventListener("change", (e) => {
+  document.getElementById("gst-rate-label").classList.toggle("hidden", !e.target.checked);
+});
+
+// Populate month filter
+for (let i = 1; i <= 12; i++) {
+  const option = document.createElement("option");
+  option.value = i;
+  option.textContent = new Date(0, i - 1).toLocaleString('default', { month: 'long' });
+  document.getElementById("monthFilter").appendChild(option);
+}
+
+
+  </script>
+</body>
+</html>

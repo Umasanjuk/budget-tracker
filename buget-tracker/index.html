@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Expensify Clone</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Fira+Sans:ital,wght@1,600&display=swap" rel="stylesheet">
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <style>
+    :root {
+      --bg-light: linear-gradient(to bottom, #ffffff, #e6f0ff);
+      --bg-dark: #121212;
+      --text-dark: #ffffff;
+      --text-light: #003366;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Playfair Display', serif;
+      background: var(--bg-light);
+      color: var(--text-light);
+      transition: all 0.3s ease;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+      scroll-behavior: smooth;
+    }
+
+    body.dark-mode {
+      background: var(--bg-dark);
+      color: var(--text-dark);
+    }
+
+    header, footer {
+      animation: fadeInDown 1s ease-in-out;
+    }
+
+    main {
+      animation: fadeInUp 1.5s ease-in-out;
+    }
+
+    @keyframes fadeInDown {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px;
+      background-color: #003366;
+      color: white;
+    }
+
+    .logo {
+      font-weight: bold;
+      font-size: 24px;
+    }
+
+    .sign-in {
+      background: white;
+      color: #003366;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .toggle-container {
+      position: absolute;
+      top: 20px;
+      right: 100px;
+    }
+
+    .dark-toggle {
+      width: 50px;
+      height: 24px;
+      background: #ccc;
+      border-radius: 12px;
+      position: relative;
+      cursor: pointer;
+    }
+
+    .dark-toggle::before {
+      content: "";
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      top: 2px;
+      left: 2px;
+      background: white;
+      border-radius: 50%;
+      transition: 0.3s;
+    }
+
+    .dark-toggle.active {
+      background: #333;
+    }
+
+    .dark-toggle.active::before {
+      transform: translateX(26px);
+      background: #00cc99;
+    }
+
+    .svg-bg {
+      width: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: -1;
+    }
+
+    .highlight-heading {
+      font-size: 2.5rem;
+      margin-bottom: 20px;
+      line-height: 1.4;
+      text-align: center;
+    }
+
+    .highlight-heading .fast {
+      font-family: 'Fira Sans', sans-serif;
+      color: #00cc99;
+      font-style: italic;
+    }
+
+    #typedText {
+      font-style: italic;
+      color: #ff6600;
+    }
+
+    .features, .options {
+      list-style: none;
+      max-width: 600px;
+      margin: 0 auto;
+      text-align: center;
+      padding: 10px;
+    }
+
+    .option {
+      border: 2px solid #003366;
+      padding: 10px;
+      border-radius: 8px;
+      margin: 5px;
+      cursor: pointer;
+    }
+
+    .option.selected {
+      background: #003366;
+      color: white;
+    }
+
+    .signup-form {
+      margin-top: 30px;
+      text-align: center;
+    }
+
+    .floating-label {
+      position: relative;
+      width: 250px;
+      margin: 10px auto;
+    }
+
+    .floating-label input {
+      width: 100%;
+      padding: 12px 10px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+
+    .floating-label label {
+      position: absolute;
+      left: 12px;
+      top: 14px;
+      pointer-events: none;
+      transition: 0.2s ease all;
+      color: #666;
+    }
+
+    .floating-label input:focus + label,
+    .floating-label input:not(:placeholder-shown) + label {
+      top: -10px;
+      left: 10px;
+      font-size: 12px;
+      background: white;
+      padding: 0 4px;
+      color: #003366;
+    }
+
+    #emailFeedback {
+      color: red;
+      display: block;
+      margin-top: 4px;
+      font-size: 13px;
+    }
+
+    .get-started {
+      padding: 10px 16px;
+      background: #00cc99;
+      border: none;
+      color: white;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .get-started::after {
+      content: "";
+      position: absolute;
+      width: 0;
+      height: 0;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.4);
+      transform: scale(1);
+      transition: width 0.4s ease, height 0.4s ease;
+      z-index: 0;
+    }
+
+    .get-started:active::after {
+      width: 120px;
+      height: 120px;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(1);
+    }
+
+    footer {
+      text-align: center;
+      background: #003366;
+      color: white;
+      padding: 15px;
+      margin-top: auto;
+    }
+  </style>
+</head>
+<body>
+  <svg class="svg-bg" viewBox="0 0 1440 320">
+    <path fill="#e6f0ff" fill-opacity="1"
+      d="M0,224L80,202.7C160,181,320,139,480,138.7C640,139,800,181,960,181.3C1120,181,1280,139,1360,117.3L1440,96L1440,0L1360,0C1280,0,1120,0,960,0C800,0,640,0,480,0C320,0,160,0,80,0L0,0Z">
+    </path>
+  </svg>
+
+  <header>
+    <h1 class="logo">Expensify</h1>
+    <button class="sign-in" onclick="google.accounts.id.prompt()">Sign In</button>
+  </header>
+
+ 
+
+  <main>
+    <h2 class="highlight-heading typing">
+      The <span class="fast">fastest 🚗</span> way<br/><span id="typedText"></span>
+    </h2>
+
+    <ul class="features">
+      <li><strong>All inclusive:</strong> Manage expenses, travel, and reports.</li>
+      <li><strong>Corporate cards:</strong> Bring your own or get cashback.</li>
+      <li><strong>45+ integrations:</strong> QuickBooks, Gusto, and more.</li>
+    </ul>
+
+    <section class="choices">
+      <h3 style="text-align:center;">I want to:</h3>
+      <ul class="options">
+        <li class="option" onclick="selectOption(this)">Organize my own expenses</li>
+        <li class="option" onclick="selectOption(this)">Manage expenses for 1-9 employees</li>
+        <li class="option" onclick="selectOption(this)">Manage expenses for 10+ employees</li>
+      </ul>
+    </section>
+
+    <div class="signup-form">
+      <form onsubmit="return validateForm()">
+        <div class="floating-label">
+          <input type="email" id="userEmail" placeholder=" " required />
+          <label for="userEmail">Enter your email</label>
+          <small id="emailFeedback"></small>
+        </div>
+        <button type="submit" class="get-started">Get Started</button>
+      </form>
+    </div>
+
+   
+
+    <div class="g_id_signin" data-type="standard"></div>
+  </main>
+
+  <footer>
+    © 2025 Expensify Clone. Built with ❤️ for simplicity.
+  </footer>
+
+  <script>
+    // Dark mode toggle
+    window.onload = () => {
+      const isDark = localStorage.getItem("darkMode") === "true";
+      if (isDark) {
+        document.body.classList.add("dark-mode");
+        document.getElementById("darkToggle").classList.add("active");
+      }
+    }
+
+    function toggleDarkMode() {
+      const isDark = document.body.classList.toggle("dark-mode");
+      document.getElementById("darkToggle").classList.toggle("active");
+      localStorage.setItem("darkMode", isDark);
+    }
+
+    function selectOption(element) {
+      document.querySelectorAll(".option").forEach(opt => opt.classList.remove("selected"));
+      element.classList.add("selected");
+    }
+
+    function validateForm() {
+      const email = document.getElementById("userEmail").value;
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      const button = document.querySelector(".get-started");
+      const feedback = document.getElementById("emailFeedback");
+
+      if (!emailRegex.test(email)) {
+        feedback.textContent = "❌ Invalid email address";
+        return false;
+      }
+
+      button.disabled = true;
+      button.innerHTML = "Processing... ⏳";
+
+      setTimeout(() => {
+        window.location.href = "login.html"; // Simulated redirect
+      }, 2000);
+
+      return false;
+    }
+
+    // Email input live validation
+    document.getElementById("userEmail").addEventListener("input", function () {
+      const email = this.value;
+      const feedback = document.getElementById("emailFeedback");
+      const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      feedback.textContent = regex.test(email) ? "" : "❌ Invalid email address";
+    });
+
+    // Typing text animation
+    const phrases = ["track your spending", "automate your reports", "manage budgets better"];
+    let i = 0, j = 0, currentPhrase = [], isDeleting = false, isEnd = false;
+
+    function loop() {
+      isEnd = false;
+      document.getElementById("typedText").innerHTML = currentPhrase.join("");
+
+      if (i < phrases.length) {
+        if (!isDeleting && j <= phrases[i].length) {
+          currentPhrase.push(phrases[i][j]);
+          j++;
+        }
+
+        if (isDeleting && j <= phrases[i].length) {
+          currentPhrase.pop();
+          j--;
+        }
+
+        if (j == phrases[i].length) {
+          isEnd = true;
+          isDeleting = true;
+        }
+
+        if (isDeleting && j === 0) {
+          currentPhrase = [];
+          isDeleting = false;
+          i++;
+          if (i === phrases.length) i = 0;
+        }
+      }
+
+      const speed = isEnd ? 2000 : isDeleting ? 50 : 100;
+      setTimeout(loop, speed);
+    }
+
+    loop();
+  </script>
+</body>
+</html>
